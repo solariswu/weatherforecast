@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/daily_ico"
+        android:layout_width="48sp"
+        android:layout_height="match_parent"
+        android:gravity="start|center_vertical"
+        android:text="Mostly-Cloudy-icon"
+        android:layout_marginRight="5dp"/>
+    <TextView
+        android:id="@+id/daily_date"
+        android:layout_width="100sp"
+        android:layout_height="match_parent"
+        android:gravity="start|center_vertical"
+        android:textSize="12sp"
+        android:text="Mon: 8/23"/>
+    <TextView
+        android:id="@+id/daily_desc"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textSize="12sp"
+        android:gravity="end|center_vertical"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:text="Light rain in the morning."/>
+</LinearLayout>
