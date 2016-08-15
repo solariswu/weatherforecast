@@ -26,6 +26,7 @@ import com.westpac.weather.adapters.HourlyAdapter;
 import com.westpac.weather.models.Datum_;
 import com.westpac.weather.models.WeatherData;
 import com.westpac.weather.services.RetrofitService;
+import com.westpac.weather.utils.MyUtil;
 import com.westpac.weather.utils.RetrofitManager;
 
 import org.w3c.dom.Text;
@@ -104,8 +105,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateWeatherUI (WeatherData weatherData) {
-        Double dCurTemp = weatherData.getCurrently().getTemperature();
-        BigDecimal bCurTemp = new BigDecimal(dCurTemp).setScale(0, BigDecimal.ROUND_HALF_UP);
 
         // Use time zone, can change to location later
         TextView timeZone = (TextView) this.findViewById(R.id.tv_location);
@@ -119,9 +118,11 @@ public class MainActivity extends AppCompatActivity {
          iconText.setText(weatherData.getCurrently().getIcon());
 
         // set current temperature
-        TextView currTemp = (TextView) this.findViewById(R.id.currTemp);
+        Double dCurTemp = weatherData.getCurrently().getTemperature();
+        Double dCentigrade = MyUtil.fahrenheit2Centigrade (dCurTemp, 0);
 
-        String strCurTemp = bCurTemp.toString()+"°F";
+        TextView currTemp = (TextView) this.findViewById(R.id.currTemp);
+        String strCurTemp = dCentigrade.intValue()+"°C";
 
         if (null != currTemp)
             currTemp.setText(strCurTemp);

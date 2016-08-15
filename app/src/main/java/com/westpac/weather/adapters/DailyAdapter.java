@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.westpac.weather.R;
 import com.westpac.weather.models.Datum;
 import com.westpac.weather.models.Datum_;
+import com.westpac.weather.utils.MyUtil;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,11 +38,13 @@ public class DailyAdapter extends ArrayAdapter<Datum_> {
 
         Long time = getItem(position).getTime();
 
+        Double dTempMin = MyUtil.fahrenheit2Centigrade(getItem(position).getTemperatureMin(),0);
+        Double dTempMax = MyUtil.fahrenheit2Centigrade(getItem(position).getTemperatureMax(),0);
+
         Date dateNtp = new Date(time*1000);
         SimpleDateFormat format = new SimpleDateFormat("E:", Locale.US);
         String dateFormatNtp = format.format(dateNtp)+ "  "+
-                getItem(position).getTemperatureMin().intValue() +"/"+
-                getItem(position).getTemperatureMax().intValue()+"°F";
+                dTempMin.intValue() +"/"+ dTempMax.intValue()+"°C";
 
         ((TextView) rootView.findViewById(R.id.daily_date)).setText(dateFormatNtp);
 
