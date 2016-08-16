@@ -30,6 +30,9 @@ public class WeatherData {
     @SerializedName("flags")
     @Expose
     private Flags flags;
+    @SerializedName("alerts")
+    @Expose
+    private Alerts alerts[];
 
     /**
      * 
@@ -174,5 +177,9 @@ public class WeatherData {
     public void setFlags(Flags flags) {
         this.flags = flags;
     }
+
+    public Alerts[] getAlerts() {return alerts; }
+
+    public void setAlerts(Alerts alerts[]) { this.alerts = alerts; }
 
 }
