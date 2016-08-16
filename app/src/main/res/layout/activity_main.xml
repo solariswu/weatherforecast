@@ -27,14 +27,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <TextView
-            android:id="@+id/iconText"
+        <ImageView
+            android:id="@+id/bigweathericon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:textSize="16sp"
-            android:text="Mostly-Cloudy-icon"
-            />
+            android:contentDescription="currentweather" />
         <TextView
             android:id="@+id/currTemp"
             android:paddingTop="@dimen/activity_vertical_margin"

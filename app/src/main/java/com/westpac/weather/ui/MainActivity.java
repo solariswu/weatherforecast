@@ -16,6 +16,7 @@ import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
 
         registerReceiver(mReceiver, new IntentFilter(MainActivity.ACTION_WEATHER_DATA_NOTIFY));
 
-
         // setup location update listener
         mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -113,9 +113,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Set current weather
-        TextView iconText = (TextView) this.findViewById(R.id.iconText);
-        if (null != iconText)
-         iconText.setText(weatherData.getCurrently().getIcon());
+        ImageView imageView = (ImageView) this.findViewById(R.id.bigweathericon);
+        if (null != imageView)
+            imageView.setImageDrawable(MyUtil.mapIconStringToDrawable(this,
+                    weatherData.getCurrently().getIcon()+"_128"));
 
         // set current temperature
         Double dCurTemp = weatherData.getCurrently().getTemperature();
