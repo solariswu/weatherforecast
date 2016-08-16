@@ -23,8 +23,11 @@ import java.util.Locale;
  *
  */
 public class DailyAdapter extends ArrayAdapter<Datum_> {
+    private Context mContext;
+
     public DailyAdapter(Context context, Datum_[] objects) {
-        super(context, R.layout.dailyitems_list, R.id.daily_ico, objects);
+        super(context, R.layout.dailyitems_list, R.id.daily_desc, objects);
+        mContext = context;
     }
 
     @Override
@@ -32,10 +35,14 @@ public class DailyAdapter extends ArrayAdapter<Datum_> {
         View rootView = super.getView(position, convertView, parent);
 
         //setting up related data from the data structure to corresponding views
-        //String strIco = getItem(position).getIcon();
-        ((TextView) rootView.findViewById(R.id.daily_ico)).setText(getItem(position).getIcon());
+
+        //set weather icon to list view
+        ((ImageView) rootView.findViewById(R.id.daily_ico)).setImageDrawable(
+                MyUtil.mapIconStringToDrawable(mContext, getItem(position).getIcon()));
+        //set weather summary to list view
         ((TextView) rootView.findViewById(R.id.daily_desc)).setText(getItem(position).getSummary());
 
+        //set daily date value to list view
         Long time = getItem(position).getTime();
 
         Double dTempMin = MyUtil.fahrenheit2Centigrade(getItem(position).getTemperatureMin(),0);

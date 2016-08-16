@@ -3,13 +3,12 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <ImageView
         android:id="@+id/weather_ico"
         android:layout_width="48sp"
         android:layout_height="match_parent"
         android:gravity="start|center_vertical"
-        android:textSize="12sp"
-        android:text="Mostly Clear"/>
+        android:contentDescription="weathericon"/>
     <TextView
         android:id="@+id/short_desc"
         android:layout_width="80sp"

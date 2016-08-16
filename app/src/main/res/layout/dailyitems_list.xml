@@ -3,12 +3,12 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <ImageView
         android:id="@+id/daily_ico"
         android:layout_width="48sp"
         android:layout_height="match_parent"
         android:gravity="start|center_vertical"
-        android:text="Mostly-Cloudy-icon"
+        android:contentDescription="weathericon"
         android:layout_marginRight="5dp"/>
     <TextView
         android:id="@+id/daily_date"
