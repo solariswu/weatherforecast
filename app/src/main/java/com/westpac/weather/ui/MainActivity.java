@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 array[i] = list.get(i);
             }
 
-            lvHourly.setAdapter(new HourlyAdapter(this, array));
+            lvHourly.setAdapter(new HourlyAdapter(this, array, mWeatherData.getOffset()));
         }
 
         // set daily view list

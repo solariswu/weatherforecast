@@ -25,10 +25,12 @@ import java.util.Locale;
  */
 public class HourlyAdapter extends ArrayAdapter<Datum_> {
     private Context mContext;
+    private Integer mTimeOffset;
 
-    public HourlyAdapter(Context context, Datum_[] objects) {
+    public HourlyAdapter(Context context, Datum_[] objects, Integer offset) {
         super(context, R.layout.hourlyitems_list, R.id.short_desc, objects);
         mContext = context;
+        mTimeOffset = offset;
     }
 
     @Override
@@ -44,10 +46,10 @@ public class HourlyAdapter extends ArrayAdapter<Datum_> {
         ((TextView) rootView.findViewById(R.id.short_desc)).setText(getItem(position).getSummary());
 
         //Set hourly time
-        Long time = getItem(position).getTime();
+        Long time = getItem(position).getTime() - mTimeOffset *3600;
 
         Date dateNtp = new Date(time*1000);
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.US);
+        SimpleDateFormat format = new SimpleDateFormat("hh:mm a", Locale.US);
         String dateFormatNtp = format.format(dateNtp);
 
         ((TextView) rootView.findViewById(R.id.hourly_time)).setText(dateFormatNtp);
