@@ -44,7 +44,7 @@ import retrofit.Retrofit;
 public class MainActivity extends AppCompatActivity {
 
     public static final String STR_WEATHER_API_KEY="677bb1722471bc47d236bc195384c273";
-    public static final String STR_WEATHER_URL="https://api.forecast.io/";
+    public static final String STR_WEATHER_URL="https://api.darksky.net/";
 
     public static final String ACTION_WEATHER_DATA_NOTIFY = "ACTION_WEATHER_DATA_NOTIFY";
 

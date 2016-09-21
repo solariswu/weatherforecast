@@ -25,6 +25,7 @@ import java.util.Locale;
  */
 public class HourlyAdapter extends ArrayAdapter<Datum_> {
     private Context mContext;
+    // timezone offset got from weather data source
     private Integer mTimeOffset;
 
     public HourlyAdapter(Context context, Datum_[] objects, Integer offset) {
@@ -45,7 +46,7 @@ public class HourlyAdapter extends ArrayAdapter<Datum_> {
         //Set weather summary
         ((TextView) rootView.findViewById(R.id.short_desc)).setText(getItem(position).getSummary());
 
-        //Set hourly time
+        //Set hourly time value and format
         Long time = getItem(position).getTime() - mTimeOffset *3600;
 
         Date dateNtp = new Date(time*1000);

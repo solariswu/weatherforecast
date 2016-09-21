@@ -1,9 +1,6 @@
 package com.westpac.weather.utils;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.widget.ImageView;
-
-import com.westpac.weather.R;
 
 import java.math.BigDecimal;
 
