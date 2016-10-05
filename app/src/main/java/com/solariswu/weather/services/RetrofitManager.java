@@ -1,4 +1,4 @@
-package com.solariswu.weather.utils;
+package com.solariswu.weather.services;
 
 import android.util.Log;
 

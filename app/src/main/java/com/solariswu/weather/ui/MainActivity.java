@@ -25,8 +25,9 @@ import com.solariswu.weather.models.GeoLocationData;
 import com.solariswu.weather.models.LatLng;
 import com.solariswu.weather.models.WeatherData;
 import com.solariswu.weather.services.RetrofitService;
+import com.solariswu.weather.services.WeatherPresenter;
 import com.solariswu.weather.utils.MyUtil;
-import com.solariswu.weather.utils.RetrofitManager;
+import com.solariswu.weather.services.RetrofitManager;
 
 
 
@@ -41,23 +42,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 
-public class MainActivity extends AppCompatActivity {
-
-    //Log Identification String
-    public static final String WEATHERREPORT_LOG = "WEATHERPORT";
-
-    //Retrofit Service variables
-    private RetrofitService mGeoLocationService;
-    private RetrofitService mWeatherService;
-
-    //DARK Sky weather API_KEY, url and data notification ID
-    public static final String STR_WEATHER_API_KEY      = "677bb1722471bc47d236bc195384c273";
-    public static final String STR_WEATHER_URL          = "https://api.darksky.net/";
-
-    //Google GEOLOCATION API_KEY, url and data notification ID
-    public static final String STR_GEOLOCATION_API_KEY  = "AIzaSyCsPFEM6kbaJSdnCugIfexgeo9w_7zSnbA";
-    public static final String STR_GEOLOCATION_URL         = "https://maps.googleapis.com/";
-    public static final String STR_GEOLOCATION_RESULT_TYPE = "country|locality";
+public class MainActivity extends AppCompatActivity implements WeatherView {
 
     //Location services permission indication
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1001;
@@ -69,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
     //Weather forecast duration defines
     public static final int NUM_FORECAST_HOURS = 12;
     public static final int NUM_FORECAST_DAY = 7;
+
+    //MVP presenter
+    private WeatherPresenter mWeatherPresenter;
 
     //Butter knife variables
     Unbinder unbinder;
@@ -114,16 +102,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // prepare the retrofit services
-        Retrofit geoLocationRetrofit = RetrofitManager.getInstance()
-                .buildGeoLocationRetrofit(STR_GEOLOCATION_URL);
-
-        mGeoLocationService = geoLocationRetrofit.create(RetrofitService.class);
-
-        Retrofit weatherRetrofit = RetrofitManager.getInstance()
-                .buildWeatherRetrofit(STR_WEATHER_URL);
-
-        mWeatherService = weatherRetrofit.create(RetrofitService.class);
+        // Bind presenter
+        mWeatherPresenter = new WeatherPresenter();
+        mWeatherPresenter.onCreate(this);
 
         //start to update location Latitude & Longitude
         requestLocation();
@@ -156,64 +137,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void fetchGeoLocation (LatLng latLng) {
+    @Override
+    public void initViews() {
 
-        Log.i(WEATHERREPORT_LOG, "LATLNG:"+ latLng);
-
-        mGeoLocationService.getGeoLocationData(latLng,
-                STR_GEOLOCATION_RESULT_TYPE,
-                STR_GEOLOCATION_API_KEY)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<GeoLocationData>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.i (WEATHERREPORT_LOG, "Get Geo Name complete.");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.i (WEATHERREPORT_LOG, "Get geo meets error: "+e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(GeoLocationData geoLocationData) {
-                        updateGeoLocationUI(geoLocationData);
-                    }
-                });
     }
 
-    private void updateGeoLocationUI (GeoLocationData geoLocationData) {
+    @Override
+    public void updateGeoLocationUI (GeoLocationData geoLocationData) {
         if (!geoLocationData.getResults().isEmpty()) {
             mTVGeoLocation.setText(geoLocationData.getResults().get(0).getFormattedAddress());
         }
-    }
-
-    private void fetchWeatherData (LatLng latLng) {
-
-        Log.i(WEATHERREPORT_LOG, "Fetch weather Data LATLNG:"+ latLng);
-
-        mWeatherService.getWeatherData(STR_WEATHER_API_KEY,
-                latLng.getLatitude(),
-                latLng.getLongitude())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<WeatherData>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.i (WEATHERREPORT_LOG, "Get Weather Data complete.");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e (WEATHERREPORT_LOG, "Get Weather Data meets error: "+e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(WeatherData weatherData) {
-                        updateWeatherUI(weatherData);
-                    }
-                });
     }
 
     private void updateCurrentWeatherUI (WeatherData weatherData) {
@@ -271,7 +204,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void updateWeatherUI (WeatherData weatherData) {
+    @Override
+    public void updateWeatherUI (WeatherData weatherData) {
 
         updateCurrentWeatherUI(weatherData);
 
@@ -289,9 +223,9 @@ public class MainActivity extends AppCompatActivity {
                 if (location != null) {
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-                    fetchWeatherData(latLng);
+                    mWeatherPresenter.fetchWeatherData(latLng);
 
-                    fetchWeatherData(latLng);
+                    mWeatherPresenter.fetchGeoLocationData(latLng);
                 }
                 mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                         0, 1000, mlocListener);
@@ -321,10 +255,10 @@ public class MainActivity extends AppCompatActivity {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
             //get the weather data by the Latitude & Longitude value
-            fetchWeatherData(latLng);
+            mWeatherPresenter.fetchWeatherData(latLng);
 
             //get GEO Location info with the Latitude & Longitude value
-            fetchGeoLocation(latLng);
+            mWeatherPresenter.fetchGeoLocationData(latLng);
         }
 
         @Override
