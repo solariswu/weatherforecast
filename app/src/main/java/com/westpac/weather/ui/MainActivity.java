@@ -212,18 +212,14 @@ public class MainActivity extends AppCompatActivity {
         if (!geoLocationData.getResults().isEmpty()) {
             String formattedAddress[];
             formattedAddress = geoLocationData.getResults().get(0).getFormattedAddress().split(",");
-            Log.i (WEATHERREPORT_LOG, "FormattedAddress: " + geoLocationData.getResults().get(0));
+            Log.i (WEATHERREPORT_LOG, "FormattedAddress: " +
+                    geoLocationData.getResults().get(0).getFormattedAddress());
+            mTVGeoLocation.setText(geoLocationData.getResults().get(0).getFormattedAddress());
            // mTVGeoLocation.setText(formattedAddress[1]+"/"+formattedAddress[2]);
         }
     }
 
     private void updateWeatherUI (WeatherData weatherData) {
-
-        // Use time zone, can change to location later
-        TextView timeZone = (TextView) this.findViewById(R.id.tv_location);
-        if (null != timeZone) {
-            timeZone.setText(weatherData.getTimezone());
-        }
 
         // Set current weather
         ImageView imageView = (ImageView) this.findViewById(R.id.bigweathericon);
