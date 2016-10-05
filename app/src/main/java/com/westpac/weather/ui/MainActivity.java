@@ -12,10 +12,9 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.widget.ListViewAutoScrollHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.Button;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -25,47 +24,88 @@ import com.westpac.weather.R;
 import com.westpac.weather.adapters.DailyAdapter;
 import com.westpac.weather.adapters.HourlyAdapter;
 import com.westpac.weather.models.Datum_;
+import com.westpac.weather.models.GeoLocationData;
+import com.westpac.weather.models.LatLng;
 import com.westpac.weather.models.WeatherData;
 import com.westpac.weather.services.RetrofitService;
 import com.westpac.weather.utils.MyUtil;
 import com.westpac.weather.utils.RetrofitManager;
 
+
 import org.w3c.dom.Text;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
-import retrofit.Call;
-import retrofit.Response;
-import retrofit.Retrofit;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.http.Path;
+import rx.Observable;
+import rx.Scheduler;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String STR_WEATHER_API_KEY="677bb1722471bc47d236bc195384c273";
-    public static final String STR_WEATHER_URL="https://api.darksky.net/";
-
+    //DARK Sky weather API_KEY, url and data notification ID
+    public static final String STR_WEATHER_API_KEY     = "677bb1722471bc47d236bc195384c273";
+    public static final String STR_WEATHER_URL         = "https://api.darksky.net/";
     public static final String ACTION_WEATHER_DATA_NOTIFY = "ACTION_WEATHER_DATA_NOTIFY";
 
+
+    //Google GEOLOCATION API_KEY, url and data notification ID
+    public static final String STR_GEOLOCATION_API_KEY     = "AIzaSyCsPFEM6kbaJSdnCugIfexgeo9w_7zSnbA";
+    public static final String STR_GEOLOCATION_URL         = "https://maps.googleapis.com/";
+    public static final String STR_GEOLOCATION_RESULT_TYPE = "country|locality";
+    public static final String ACTION_GEOLOCATION_DATA_NOTIFY = "ACTION_GEOLOCATION_DATA_NOTIFY";
+
+
+    //Weather forecast duration defines
     public static final int NUM_FORECAST_HOURS = 12;
     public static final int NUM_FORECAST_DAY = 7;
 
+
+    //Log Identification String
+    public static final String WEATHERREPORT_LOG = "WEATHERPORT";
+
+
+    //Data storages
     private WeatherData mWeatherData;
     private BroadcastReceiver mReceiver;
     private AsyncTask<String, Void, Long> mDataFetchTask;
 
+
+    //Service variables
     LocationManager mlocManager;
     LocationListener mlocListener;
+    RetrofitService mGeoLocationService;
+
+
+    //Location variables
     private double mLatitude;
     private double mLongitude;
 
+
     public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1001;
+
+
+    //View variables
+    Unbinder unbinder;
+
+    @BindView(R.id.tv_location)
+    TextView mTVGeoLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        unbinder = ButterKnife.bind(this);
 
         // create receiver to get weather data update
         mReceiver = new BroadcastReceiver()
@@ -101,7 +141,80 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        Retrofit geoLocationRetrofit = RetrofitManager.getInstance()
+                .buildGeoLocationRetrofit(STR_GEOLOCATION_URL);
+
+        mGeoLocationService = geoLocationRetrofit.create(RetrofitService.class);
+
         requestLocation();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
+        unbinder.unbind();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        // from android 23, needs user interaction for dangerous permissions grant
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    requestLocation();
+                } else {
+                    Toast.makeText(this, "No Permission Granted.", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+            default:
+                break;
+        }
+    }
+
+    private void updateGeoLocation (double latitude, double longitude) {
+
+        Log.i(WEATHERREPORT_LOG, "LAT:"+latitude+" LNG:"+longitude);
+
+        mGeoLocationService.getGeoLocationData(new LatLng(latitude, longitude),
+                STR_GEOLOCATION_RESULT_TYPE,
+                STR_GEOLOCATION_API_KEY)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<GeoLocationData>() {
+                    @Override
+                    public void onCompleted() {
+                      /*  Toast.makeText(MainActivity.this, "Get Geo Name complete.",
+                                Toast.LENGTH_LONG)
+                                .show();*/
+                        Log.i (WEATHERREPORT_LOG, "Get Geo Name complete.");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                       /* Toast.makeText(MainActivity.this, "Get Geo Name error.", Toast.LENGTH_LONG)
+                                .show();*/
+                        Log.i (WEATHERREPORT_LOG, "Get geo meets error: "+e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(GeoLocationData geoLocationData) {
+                        updateGeoLocationUI(geoLocationData);
+                    }
+                });
+    }
+
+    private void updateGeoLocationUI (GeoLocationData geoLocationData) {
+        if (!geoLocationData.getResults().isEmpty()) {
+            String formattedAddress[];
+            formattedAddress = geoLocationData.getResults().get(0).getFormattedAddress().split(",");
+            Log.i (WEATHERREPORT_LOG, "FormattedAddress: " + geoLocationData.getResults().get(0));
+           // mTVGeoLocation.setText(formattedAddress[1]+"/"+formattedAddress[2]);
+        }
     }
 
     private void updateWeatherUI (WeatherData weatherData) {
@@ -182,30 +295,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                          String permissions[], int[] grantResults) {
-        // from android 23, needs user interaction for dangerous permissions grant
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    requestLocation();
-                } else {
-                    Toast.makeText(this, "No Permission Granted.", Toast.LENGTH_LONG).show();
-                }
-                return;
-            }
-            default:
-                break;
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(mReceiver);
-    }
 
     private class WFLocationListener implements LocationListener {
 
@@ -223,6 +312,9 @@ public class MainActivity extends AppCompatActivity {
             mLongitude = location.getLongitude();
 
             mDataFetchTask = new onRequestWeather().execute();
+
+            //update GEO Location info with the Latitude & Longitude
+            updateGeoLocation(mLatitude, mLongitude);
         }
 
         @Override
@@ -261,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
                         mLongitude);
                 Response<WeatherData> responseResponse;
                 responseResponse = call.execute();
-                if (responseResponse.isSuccess()) {
+                if (responseResponse.isSuccessful()) {
                     mWeatherData = responseResponse.body();
                     Intent data = new Intent(ACTION_WEATHER_DATA_NOTIFY);
                     sendBroadcast(data);
