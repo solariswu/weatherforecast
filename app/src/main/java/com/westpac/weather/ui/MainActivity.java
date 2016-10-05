@@ -52,53 +52,51 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
+    //Log Identification String
+    public static final String WEATHERREPORT_LOG = "WEATHERPORT";
+
+    //Retrofit Service variables
+    private RetrofitService mGeoLocationService;
+    private RetrofitService mWeatherService;
+
     //DARK Sky weather API_KEY, url and data notification ID
     public static final String STR_WEATHER_API_KEY     = "677bb1722471bc47d236bc195384c273";
     public static final String STR_WEATHER_URL         = "https://api.darksky.net/";
-    public static final String ACTION_WEATHER_DATA_NOTIFY = "ACTION_WEATHER_DATA_NOTIFY";
-
 
     //Google GEOLOCATION API_KEY, url and data notification ID
     public static final String STR_GEOLOCATION_API_KEY     = "AIzaSyCsPFEM6kbaJSdnCugIfexgeo9w_7zSnbA";
     public static final String STR_GEOLOCATION_URL         = "https://maps.googleapis.com/";
     public static final String STR_GEOLOCATION_RESULT_TYPE = "country|locality";
-    public static final String ACTION_GEOLOCATION_DATA_NOTIFY = "ACTION_GEOLOCATION_DATA_NOTIFY";
 
+    //Location services permission indication
+    public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1001;
+
+    //GPS Location Service variables
+    private LocationManager mlocManager;
+    private LocationListener mlocListener;
 
     //Weather forecast duration defines
     public static final int NUM_FORECAST_HOURS = 12;
     public static final int NUM_FORECAST_DAY = 7;
 
-
-    //Log Identification String
-    public static final String WEATHERREPORT_LOG = "WEATHERPORT";
-
-
-    //Data storages
-    private WeatherData mWeatherData;
-    private BroadcastReceiver mReceiver;
-    private AsyncTask<String, Void, Long> mDataFetchTask;
-
-
-    //Service variables
-    LocationManager mlocManager;
-    LocationListener mlocListener;
-    RetrofitService mGeoLocationService;
-
-
-    //Location variables
-    private double mLatitude;
-    private double mLongitude;
-
-
-    public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1001;
-
-
-    //View variables
+    //Butterknife variables
     Unbinder unbinder;
 
+    //UI elements
     @BindView(R.id.tv_location)
     TextView mTVGeoLocation;
+
+    @BindView(R.id.iv_bigweather)
+    ImageView mIVBigWeather;
+
+    @BindView(R.id.tv_currTemp)
+    TextView mTVCurrTemp;
+
+    @BindView(R.id.lv_Hourly)
+    ListView mLVHourly;
+
+    @BindView(R.id.lv_Daily)
+    ListView mLVDaily;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,24 +104,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         unbinder = ButterKnife.bind(this);
-
-        // create receiver to get weather data update
-        mReceiver = new BroadcastReceiver()
-        {
-            @Override
-            public void onReceive(Context context, Intent intent)
-            {
-                String intentAction = intent.getAction();
-
-                if (intentAction.equals(MainActivity.ACTION_WEATHER_DATA_NOTIFY) &&
-                        null !=mWeatherData)
-                {
-                    updateWeatherUI(mWeatherData);
-                }
-            }
-        };
-
-        registerReceiver(mReceiver, new IntentFilter(MainActivity.ACTION_WEATHER_DATA_NOTIFY));
 
         // setup location update listener
         mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -146,6 +126,11 @@ public class MainActivity extends AppCompatActivity {
 
         mGeoLocationService = geoLocationRetrofit.create(RetrofitService.class);
 
+        Retrofit weatherRetrofit = RetrofitManager.getInstance()
+                .buildWeatherRetrofit(STR_WEATHER_URL);
+
+        mWeatherService = weatherRetrofit.create(RetrofitService.class);
+
         requestLocation();
 
     }
@@ -153,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
         unbinder.unbind();
     }
 
@@ -176,11 +160,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateGeoLocation (double latitude, double longitude) {
+    private void fetchGeoLocation (LatLng latLng) {
 
-        Log.i(WEATHERREPORT_LOG, "LAT:"+latitude+" LNG:"+longitude);
+        Log.i(WEATHERREPORT_LOG, "LATLNG:"+ latLng);
 
-        mGeoLocationService.getGeoLocationData(new LatLng(latitude, longitude),
+        mGeoLocationService.getGeoLocationData(latLng,
                 STR_GEOLOCATION_RESULT_TYPE,
                 STR_GEOLOCATION_API_KEY)
                 .subscribeOn(Schedulers.io())
@@ -210,36 +194,55 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateGeoLocationUI (GeoLocationData geoLocationData) {
         if (!geoLocationData.getResults().isEmpty()) {
-            String formattedAddress[];
-            formattedAddress = geoLocationData.getResults().get(0).getFormattedAddress().split(",");
-            Log.i (WEATHERREPORT_LOG, "FormattedAddress: " +
-                    geoLocationData.getResults().get(0).getFormattedAddress());
             mTVGeoLocation.setText(geoLocationData.getResults().get(0).getFormattedAddress());
-           // mTVGeoLocation.setText(formattedAddress[1]+"/"+formattedAddress[2]);
         }
+    }
+
+    private void fetchWeatherData (LatLng latLng) {
+
+        Log.i(WEATHERREPORT_LOG, "Fetch weather Data LATLNG:"+ latLng);
+
+        mWeatherService.getWeatherData(STR_WEATHER_API_KEY,
+                latLng.getLatitude(),
+                latLng.getLongitude())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<WeatherData>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.i (WEATHERREPORT_LOG, "Get Weather Data complete.");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e (WEATHERREPORT_LOG, "Get Weather Data meets error: "+e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(WeatherData weatherData) {
+                        updateWeatherUI(weatherData);
+                    }
+                });
     }
 
     private void updateWeatherUI (WeatherData weatherData) {
 
         // Set current weather
-        ImageView imageView = (ImageView) this.findViewById(R.id.bigweathericon);
-        if (null != imageView)
-            imageView.setImageDrawable(MyUtil.mapIconStringToDrawable(this,
+        if (null != mIVBigWeather)
+            mIVBigWeather.setImageDrawable(MyUtil.mapIconStringToDrawable(this,
                     weatherData.getCurrently().getIcon()+"_128"));
 
         // set current temperature
-        Double dCurTemp = weatherData.getCurrently().getTemperature();
-        Double dCentigrade = MyUtil.fahrenheit2Centigrade (dCurTemp, 0);
+        if (null != mTVCurrTemp) {
+            Double dCurTemp = weatherData.getCurrently().getTemperature();
+            Double dCentigrade = MyUtil.fahrenheit2Centigrade (dCurTemp, 0);
 
-        TextView currTemp = (TextView) this.findViewById(R.id.currTemp);
-        String strCurTemp = dCentigrade.intValue()+"°C";
-
-        if (null != currTemp)
-            currTemp.setText(strCurTemp);
+            String strCurTemp = dCentigrade.intValue()+"°C";
+            mTVCurrTemp.setText(strCurTemp);
+        }
 
         // set hourly list view
-        ListView lvHourly = (ListView) findViewById(R.id.lvHourly);
-        if (null != lvHourly) {
+        if (null != mLVHourly) {
             List<Datum_> list = weatherData.getHourly().getData();
 
             //show 12 hours forecast
@@ -250,12 +253,11 @@ public class MainActivity extends AppCompatActivity {
                 array[i] = list.get(i);
             }
 
-            lvHourly.setAdapter(new HourlyAdapter(this, array, mWeatherData.getOffset()));
+            mLVHourly.setAdapter(new HourlyAdapter(this, array, weatherData.getOffset()));
         }
 
         // set daily view list
-        ListView lvDaily = (ListView) findViewById(R.id.lvDaily);
-        if (null != lvDaily) {
+        if (null != mLVDaily) {
             List<Datum_> list = weatherData.getDaily().getData();
 
             //show 7 days forecast
@@ -266,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
                 array[i] = list.get(i);
             }
 
-            lvDaily.setAdapter(new DailyAdapter(this, array));
+            mLVDaily.setAdapter(new DailyAdapter(this, array));
         }
     }
 
@@ -276,9 +278,11 @@ public class MainActivity extends AppCompatActivity {
             if (mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 Location location = mlocManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (location != null) {
-                    mLatitude = location.getLatitude();
-                    mLongitude = location.getLongitude();
-                    mDataFetchTask = new onRequestWeather().execute();
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    fetchWeatherData(latLng);
+
+                    fetchWeatherData(latLng);
                 }
                 mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1000, mlocListener);
             } else {
@@ -304,13 +308,13 @@ public class MainActivity extends AppCompatActivity {
         public void onLocationChanged(Location location) {
             // Start to fetch weather data from server
 
-            mLatitude = location.getLatitude();
-            mLongitude = location.getLongitude();
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-            mDataFetchTask = new onRequestWeather().execute();
+            //get the weather data by the Latitude & Longitude value
+            fetchWeatherData(latLng);
 
-            //update GEO Location info with the Latitude & Longitude
-            updateGeoLocation(mLatitude, mLongitude);
+            //get GEO Location info with the Latitude & Longitude value
+            fetchGeoLocation(latLng);
         }
 
         @Override
@@ -329,49 +333,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(mContext.getApplicationContext(), "Gps Enabled", Toast.LENGTH_SHORT).show();
         }
 
-    }
-
-
-    private class onRequestWeather extends AsyncTask<String, Void, Long> {
-
-        @Override
-        protected Long doInBackground(String... params) {
-            if(isCancelled())
-                return 0L;
-
-            try {
-                Retrofit retrofit = RetrofitManager.getInstance().buildWeatherRetrofit(STR_WEATHER_URL);
-                RetrofitService retrofitService = retrofit.create(RetrofitService.class);
-
-                // Call Retrofit service to fetch Weather data from server URL
-                Call<WeatherData> call = retrofitService.getWeatherData(STR_WEATHER_API_KEY,
-                        mLatitude,
-                        mLongitude);
-                Response<WeatherData> responseResponse;
-                responseResponse = call.execute();
-                if (responseResponse.isSuccessful()) {
-                    mWeatherData = responseResponse.body();
-                    Intent data = new Intent(ACTION_WEATHER_DATA_NOTIFY);
-                    sendBroadcast(data);
-                }
-            }
-            catch (Exception exc) {
-                exc.printStackTrace();
-            }
-            return 0L;
-        }
-
-        @Override
-        protected void onPostExecute(Long result) {
-        }
-
-        @Override
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-        }
     }
 
 }

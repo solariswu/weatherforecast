@@ -20,4 +20,9 @@ public class LatLng {
         this.mLatitude = mLatitude;
         this.mLongitude = mLongitude;
     }
+
+    public double getLatitude () { return mLatitude; }
+
+    public double getLongitude () { return mLongitude; }
+
 }

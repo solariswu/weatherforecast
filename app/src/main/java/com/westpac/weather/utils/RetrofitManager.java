@@ -49,10 +49,11 @@ public class RetrofitManager {
     public Retrofit buildWeatherRetrofit(String SERVICE_API_BASE_URL) {
         if (null == mWeatherRetrofit) {
             mWeatherRetrofit = new Retrofit.Builder()
-                .baseUrl(SERVICE_API_BASE_URL)
-                .client(httpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+                    .baseUrl(SERVICE_API_BASE_URL)
+                    .client(httpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                    .build();
         }
         return mWeatherRetrofit;
     }
