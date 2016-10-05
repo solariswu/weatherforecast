@@ -51,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
     private RetrofitService mWeatherService;
 
     //DARK Sky weather API_KEY, url and data notification ID
-    public static final String STR_WEATHER_API_KEY     = "677bb1722471bc47d236bc195384c273";
-    public static final String STR_WEATHER_URL         = "https://api.darksky.net/";
+    public static final String STR_WEATHER_API_KEY      = "677bb1722471bc47d236bc195384c273";
+    public static final String STR_WEATHER_URL          = "https://api.darksky.net/";
 
     //Google GEOLOCATION API_KEY, url and data notification ID
-    public static final String STR_GEOLOCATION_API_KEY     = "AIzaSyCsPFEM6kbaJSdnCugIfexgeo9w_7zSnbA";
+    public static final String STR_GEOLOCATION_API_KEY  = "AIzaSyCsPFEM6kbaJSdnCugIfexgeo9w_7zSnbA";
     public static final String STR_GEOLOCATION_URL         = "https://maps.googleapis.com/";
     public static final String STR_GEOLOCATION_RESULT_TYPE = "country|locality";
 
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int NUM_FORECAST_HOURS = 12;
     public static final int NUM_FORECAST_DAY = 7;
 
-    //Butterknife variables
+    //Butter knife variables
     Unbinder unbinder;
 
     //UI elements
@@ -102,8 +102,10 @@ public class MainActivity extends AppCompatActivity {
         mlocListener = new WFLocationListener(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                            PackageManager.PERMISSION_GRANTED) {
                 //Request permission
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -291,9 +293,11 @@ public class MainActivity extends AppCompatActivity {
 
                     fetchWeatherData(latLng);
                 }
-                mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1000, mlocListener);
+                mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        0, 1000, mlocListener);
             } else {
-                mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 1000, mlocListener);
+                mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                        0, 1000, mlocListener);
             }
         }
         catch (SecurityException e) {
@@ -301,7 +305,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
 
     private class WFLocationListener implements LocationListener {
 
@@ -331,13 +334,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onProviderDisabled(String provider) {
-            Toast.makeText(mContext.getApplicationContext(), "Gps Disabled", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext.getApplicationContext(), "Gps Disabled",
+                    Toast.LENGTH_SHORT).show();
         }
 
         @Override
 
         public void onProviderEnabled(String provider) {
-            Toast.makeText(mContext.getApplicationContext(), "Gps Enabled", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext.getApplicationContext(), "Gps Enabled",
+                    Toast.LENGTH_SHORT).show();
         }
 
     }
