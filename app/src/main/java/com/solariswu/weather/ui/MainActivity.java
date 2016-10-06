@@ -11,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,10 +23,8 @@ import com.solariswu.weather.models.Datum_;
 import com.solariswu.weather.models.GeoLocationData;
 import com.solariswu.weather.models.LatLng;
 import com.solariswu.weather.models.WeatherData;
-import com.solariswu.weather.services.RetrofitService;
 import com.solariswu.weather.services.WeatherPresenter;
 import com.solariswu.weather.utils.MyUtil;
-import com.solariswu.weather.services.RetrofitManager;
 
 
 
@@ -36,10 +33,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import retrofit2.Retrofit;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 
 public class MainActivity extends AppCompatActivity implements WeatherView {
