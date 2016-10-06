@@ -1,5 +1,10 @@
 package com.solariswu.weather.services;
 
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -25,7 +30,6 @@ public class WeatherPresenter {
     //Log Identification String
     private static final String WEATHERPRESENTER_LOG = "weather_presenter";
 
-
     //Retrofit Service variables
     private RetrofitService mGeoLocationService;
     private RetrofitService mWeatherService;
@@ -39,6 +43,9 @@ public class WeatherPresenter {
     private static final String STR_GEOLOCATION_URL         = "https://maps.googleapis.com/";
     private static final String STR_GEOLOCATION_RESULT_TYPE = "country|locality";
 
+    //GPS Location Service variables
+    private LocationManager mlocManager;
+    private LocationListener mlocListener;
 
     @Nullable
     private WeatherView mView;
@@ -60,9 +67,15 @@ public class WeatherPresenter {
 
         mWeatherService = weatherRetrofit.create(RetrofitService.class);
 
+        // setup location update listener
+        mlocManager = (LocationManager)
+                ((Context) weatherViewView).getSystemService(Context.LOCATION_SERVICE);
+
+        mlocListener = new WFLocationListener();
+
     }
 
-    public void fetchWeatherData (LatLng latLng) {
+    private void fetchWeatherData (LatLng latLng) {
         Log.i(WEATHERPRESENTER_LOG, "Fetch weather Data LATLNG:"+ latLng);
 
         mWeatherService.getWeatherData(STR_WEATHER_API_KEY,
@@ -91,7 +104,7 @@ public class WeatherPresenter {
 
     }
 
-    public void fetchGeoLocationData (LatLng latLng) {
+    private void fetchGeoLocationData (LatLng latLng) {
         Log.i(WEATHERPRESENTER_LOG, "LATLNG:"+ latLng);
 
         mGeoLocationService.getGeoLocationData(latLng,
@@ -118,4 +131,68 @@ public class WeatherPresenter {
                     }
                 });
     }
+
+    public void requestLocation () {
+        //use location manager service to get Latitude and Longitude info.
+        try {
+            if (mlocManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Location location = mlocManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (location != null) {
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    fetchWeatherData(latLng);
+
+                    fetchGeoLocationData(latLng);
+                }
+                mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        0, 1000, mlocListener);
+            } else {
+                mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                        0, 1000, mlocListener);
+            }
+        }
+        catch (SecurityException e) {
+            if (null != mView) {
+                mView.showNoUserPermission();
+            }
+        }
+    }
+
+    private class WFLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            // Start to fetch weather data from server
+
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+            //get the weather data by the Latitude & Longitude value
+            fetchWeatherData(latLng);
+
+            //get GEO Location info with the Latitude & Longitude value
+            fetchGeoLocationData(latLng);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            if (null != mView) {
+                mView.indicateGpsOff();
+            }
+        }
+
+        @Override
+
+        public void onProviderEnabled(String provider) {
+            if (null != mView) {
+                mView.indicateGpsOn();
+            }
+        }
+
+    }
+
 }

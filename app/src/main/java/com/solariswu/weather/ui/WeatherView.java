@@ -16,4 +16,10 @@ public interface WeatherView {
 
     void updateWeatherUI (WeatherData weatherData);
 
+    void showNoUserPermission ();
+
+    void indicateGpsOn ();
+
+    void indicateGpsOff ();
+
 }
