@@ -195,21 +195,18 @@ public class MainActivity extends AppCompatActivity implements WeatherView {
 
     @Override
     public void showNoUserPermission () {
-        Toast.makeText(this.getApplicationContext(), "No User Permission.",
-                Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "No User Permission.", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void indicateGpsOn () {
-        Toast.makeText(this, "Gps Enabled",
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Gps Enabled", Toast.LENGTH_SHORT).show();
         Log.i ("Weatherforecast", "GPS on!");
     }
 
     @Override
     public void indicateGpsOff () {
-        Toast.makeText(this.getApplicationContext(), "Gps Disabled",
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Gps Disabled", Toast.LENGTH_SHORT).show();
         Log.i ("Weatherforecast", "GPS off!");
     }
 }
