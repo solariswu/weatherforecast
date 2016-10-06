@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WestPac Weather</string>
+    <string name="app_name">Weather Forecast</string>
     <string name="str_today">12 Hours</string>
     <string name="str_thisweek">This Week</string>
     <string name="str_defaultcity">Sydney, NSW, AU</string>
