@@ -2,6 +2,7 @@
     <string name="app_name">Weather Forecast</string>
     <string name="str_today">12 Hours</string>
     <string name="str_thisweek">This Week</string>
-    <string name="str_defaultcity">Sydney, NSW, AU</string>
     <string name="str_defaultTemp">32°C</string>
+    <string name="str_unknowgeo">NA, NA</string>
+    <string name="str_currentweather">Current Weather</string>
 </resources>

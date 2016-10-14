@@ -8,7 +8,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,7 +20,7 @@ import com.solariswu.weather.models.GeoLocationData;
 import com.solariswu.weather.models.WeatherData;
 import com.solariswu.weather.services.WeatherPresenter;
 import com.solariswu.weather.utils.MyUtil;
-
+import com.solariswu.weather.utils.WeatherConsts;
 
 
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+
 
 
 public class MainActivity extends AppCompatActivity implements WeatherView {
@@ -49,9 +49,6 @@ public class MainActivity extends AppCompatActivity implements WeatherView {
     //UI elements
     @BindView(R.id.tv_location)
     TextView mTVGeoLocation;
-
-    @BindView(R.id.iv_bigweather)
-    ImageView mIVBigWeather;
 
     @BindView(R.id.tv_currTemp)
     TextView mTVCurrTemp;
@@ -83,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements WeatherView {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-                return;
+                //return;
             }
         }
     }
@@ -122,17 +119,16 @@ public class MainActivity extends AppCompatActivity implements WeatherView {
 
     @Override
     public void updateGeoLocationUI (GeoLocationData geoLocationData) {
-        if (!geoLocationData.getResults().isEmpty()) {
+        if (!geoLocationData.getResults().isEmpty() &&
+                geoLocationData.getStatus().equals(WeatherConsts.GEOLOCATION_STATUS_OK)) {
             mTVGeoLocation.setText(geoLocationData.getResults().get(0).getFormattedAddress());
+        }
+        else {
+            mTVGeoLocation.setText(R.string.str_unknowgeo);
         }
     }
 
     private void updateCurrentWeatherUI (WeatherData weatherData) {
-
-        // Set current weather
-        if (null != mIVBigWeather)
-            mIVBigWeather.setImageDrawable(MyUtil.mapIconStringToDrawable(this,
-                    weatherData.getCurrently().getIcon()+"_128"));
 
         // set current temperature
         if (null != mTVCurrTemp) {
@@ -141,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements WeatherView {
 
             String strCurTemp = dCentigrade.intValue()+"°C";
             mTVCurrTemp.setText(strCurTemp);
+            mTVCurrTemp.setCompoundDrawablesRelativeWithIntrinsicBounds(null,MyUtil.mapIconStringToDrawable(this,
+                    weatherData.getCurrently().getIcon()+"_128"),null,null);
         }
 
     }
@@ -201,12 +199,12 @@ public class MainActivity extends AppCompatActivity implements WeatherView {
     @Override
     public void indicateGpsOn () {
         Toast.makeText(this, "Gps Enabled", Toast.LENGTH_SHORT).show();
-        Log.i ("Weatherforecast", "GPS on!");
+        Log.i (WeatherConsts.WEATHERVIEW_LOG, "GPS on!");
     }
 
     @Override
     public void indicateGpsOff () {
         Toast.makeText(this, "Gps Disabled", Toast.LENGTH_SHORT).show();
-        Log.i ("Weatherforecast", "GPS off!");
+        Log.i (WeatherConsts.WEATHERVIEW_LOG, "GPS off!");
     }
 }

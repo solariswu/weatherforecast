@@ -12,6 +12,7 @@ import com.solariswu.weather.models.GeoLocationData;
 import com.solariswu.weather.models.LatLng;
 import com.solariswu.weather.models.WeatherData;
 import com.solariswu.weather.ui.WeatherView;
+import com.solariswu.weather.utils.WeatherConsts;
 
 import javax.annotation.Nullable;
 
@@ -20,6 +21,8 @@ import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
+import static com.solariswu.weather.utils.WeatherConsts.WEATHERPRESENTER_LOG;
+
 /**
  * Created by solariswu on 16/10/5.
  *
@@ -27,21 +30,9 @@ import rx.schedulers.Schedulers;
 
 public class WeatherPresenter {
 
-    //Log Identification String
-    private static final String WEATHERPRESENTER_LOG = "weather_presenter";
-
     //Retrofit Service variables
     private RetrofitService mGeoLocationService;
     private RetrofitService mWeatherService;
-
-    //DARK Sky weather API_KEY, url and data notification ID
-    private static final String STR_WEATHER_API_KEY      = "677bb1722471bc47d236bc195384c273";
-    private static final String STR_WEATHER_URL          = "https://api.darksky.net/";
-
-    //Google GEOLOCATION API_KEY, url and data notification ID
-    private static final String STR_GEOLOCATION_API_KEY  = "AIzaSyCsPFEM6kbaJSdnCugIfexgeo9w_7zSnbA";
-    private static final String STR_GEOLOCATION_URL         = "https://maps.googleapis.com/";
-    private static final String STR_GEOLOCATION_RESULT_TYPE = "country|locality";
 
     //GPS Location Service variables
     private LocationManager mlocManager;
@@ -58,12 +49,12 @@ public class WeatherPresenter {
 
         // prepare the retrofit services
         Retrofit geoLocationRetrofit = RetrofitManager.getInstance()
-                .buildGeoLocationRetrofit(STR_GEOLOCATION_URL);
+                .buildGeoLocationRetrofit(WeatherConsts.GEOLOCATION_URL);
 
         mGeoLocationService = geoLocationRetrofit.create(RetrofitService.class);
 
         Retrofit weatherRetrofit = RetrofitManager.getInstance()
-                .buildWeatherRetrofit(STR_WEATHER_URL);
+                .buildWeatherRetrofit(WeatherConsts.WEATHER_URL);
 
         mWeatherService = weatherRetrofit.create(RetrofitService.class);
 
@@ -78,7 +69,7 @@ public class WeatherPresenter {
     private void fetchWeatherData (LatLng latLng) {
         Log.i(WEATHERPRESENTER_LOG, "Fetch weather Data LATLNG:"+ latLng);
 
-        mWeatherService.getWeatherData(STR_WEATHER_API_KEY,
+        mWeatherService.getWeatherData(WeatherConsts.WEATHER_API_KEY,
                 latLng.getLatitude(),
                 latLng.getLongitude())
                 .subscribeOn(Schedulers.io())
@@ -108,8 +99,8 @@ public class WeatherPresenter {
         Log.i(WEATHERPRESENTER_LOG, "LATLNG:"+ latLng);
 
         mGeoLocationService.getGeoLocationData(latLng,
-                STR_GEOLOCATION_RESULT_TYPE,
-                STR_GEOLOCATION_API_KEY)
+                WeatherConsts.GEOLOCATION_RESULT_TYPE,
+                WeatherConsts.GEOLOCATION_API_KEY)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<GeoLocationData>() {
@@ -186,13 +177,10 @@ public class WeatherPresenter {
         }
 
         @Override
-
         public void onProviderEnabled(String provider) {
             if (null != mView) {
                 mView.indicateGpsOn();
             }
         }
-
     }
-
 }
