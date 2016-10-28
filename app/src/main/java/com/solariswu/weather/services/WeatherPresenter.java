@@ -6,12 +6,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.solariswu.weather.models.GeoLocationData;
 import com.solariswu.weather.models.LatLng;
 import com.solariswu.weather.models.WeatherData;
 import com.solariswu.weather.ui.WeatherView;
+import com.solariswu.weather.utils.Log;
 import com.solariswu.weather.utils.WeatherConsts;
 
 import javax.annotation.Nullable;

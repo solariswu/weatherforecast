@@ -9,6 +9,7 @@ public class WeatherConsts {
     //Log Identification String
     public static final String WEATHERPRESENTER_LOG = "weather_presenter";
     public static final String WEATHERVIEW_LOG      = "weather_view";
+    public static final String WEATHERSERVICE_LOG   = "weather_service";
 
     //DARK Sky weather API_KEY, url and data notification ID
     public static final String WEATHER_API_KEY      = "677bb1722471bc47d236bc195384c273";

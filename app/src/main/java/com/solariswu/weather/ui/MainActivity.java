@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +18,7 @@ import com.solariswu.weather.models.Datum_;
 import com.solariswu.weather.models.GeoLocationData;
 import com.solariswu.weather.models.WeatherData;
 import com.solariswu.weather.services.WeatherPresenter;
+import com.solariswu.weather.utils.Log;
 import com.solariswu.weather.utils.MyUtil;
 import com.solariswu.weather.utils.WeatherConsts;
 
@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements WeatherView {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-                //return;
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.solariswu.weather.services;
 
-import android.util.Log;
+
+import com.solariswu.weather.utils.Log;
+import com.solariswu.weather.utils.WeatherConsts;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -35,13 +37,14 @@ public class RetrofitManager {
                     @Override
                     public Response intercept(Chain chain) throws IOException {
                         Request request = chain.request();
-                        Log.i("com.westpac.weather", "request :" + request.url().toString());
+                        Log.i(WeatherConsts.WEATHERSERVICE_LOG, "request :" + request.url().toString());
                         return chain.proceed(request);
                     }
                 })
                 .addInterceptor(logging)
                 .build();
     }
+
     public static RetrofitManager getInstance() {
         return uniqueInstance;
     }
@@ -57,6 +60,7 @@ public class RetrofitManager {
         }
         return mWeatherRetrofit;
     }
+
     public Retrofit buildGeoLocationRetrofit(String SERVICE_API_BASE_URL) {
         if (null == mGeoLocationRetrofit) {
             mGeoLocationRetrofit = new Retrofit.Builder()
