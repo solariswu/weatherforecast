@@ -1,1 +1,1 @@
-Android practise, weather report.
+Make a pull request for codeGuru reviewer.
